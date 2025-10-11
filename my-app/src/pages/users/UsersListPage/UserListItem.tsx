@@ -18,6 +18,9 @@ const UserListItem: React.FC<UserListItemProps> = ({
                     {user.last_name} {user.first_name}
                 </td>
                 <td className="px-6 py-4">
+                    <img src={user.image_small} alt={user.username} className="w-10 h-10 rounded-full" />
+                </td>
+                <td className="px-6 py-4">
                     {user.email}
                 </td>
                 <td className="px-6 py-4">
