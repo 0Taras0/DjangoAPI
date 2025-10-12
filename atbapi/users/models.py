@@ -7,8 +7,8 @@ class CustomUser(AbstractUser):
     image_large = models.ImageField(upload_to='avatars/', null=True, blank=True)
     
     email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return self.email

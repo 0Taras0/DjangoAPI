@@ -1,15 +1,17 @@
 import random
+import requests
 from rest_framework import viewsets, status, parsers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils.http import urlsafe_base64_decode
-
+from django.conf import settings
 from .utils import verify_recaptcha
 from .models import CustomUser
-from .serializers import UserSerializer, RegisterSerializer, PasswordResetRequestSerializer, SetNewPasswordSerializer, CustomTokenObtainPairSerializer
+from .serializers import GoogleRegisterSerializer, UserSerializer, RegisterSerializer, PasswordResetRequestSerializer, SetNewPasswordSerializer, CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework_simplejwt.views import TokenObtainPairView
+
 
 FIRST_NAMES = ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank"]
 LAST_NAMES = ["Smith", "Johnson", "Brown", "Taylor", "Anderson", "Lee"]
@@ -104,6 +106,53 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         user.set_password(serializer.validated_data['new_password'])
         user.save()
         return Response({"detail": "Пароль успішно змінено"}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['post'], url_path='google-login')
+    def google_login(self, request):
+        access_token = request.data.get("token")
+        if not access_token:
+            return Response({"detail": "Missing access token"}, status=400)
+
+        try:
+            response = requests.get(
+                "https://www.googleapis.com/oauth2/v1/userinfo",
+                params={"access_token": access_token}
+            )
+            data = response.json()
+
+            email = data.get("email")
+            first_name = data.get("given_name", "")
+            last_name = data.get("family_name", "")
+            picture = data.get("picture", "")
+
+            if not email:
+                return Response({"detail": "Email not found"}, status=400)
+
+            user = CustomUser.objects.filter(email=email).first()
+            if user:
+                refresh = CustomTokenObtainPairSerializer.get_token(user)
+                return Response({
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                }, status=200)
+
+            serializer = GoogleRegisterSerializer(data={
+                "email": email,
+                "first_name": first_name,
+                "last_name": last_name,
+                "picture": picture
+            })
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+
+            refresh = CustomTokenObtainPairSerializer.get_token(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }, status=200)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=400)
     
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

@@ -8,6 +8,9 @@ from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from urllib.request import urlopen
+import uuid
+from django.core.files.base import ContentFile
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -130,3 +133,41 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['date_joined'] = user.date_joined.strftime('%Y-%m-%d %H:%M:%S')
 
         return token
+    
+class GoogleRegisterSerializer(serializers.ModelSerializer):
+    picture = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'first_name', 'last_name', 'picture']
+
+    def create(self, validated_data):
+        picture_url = validated_data.pop("picture", None)
+        email = validated_data.get("email")
+        username = email.split("@")[0]
+
+        user, created = CustomUser.objects.get_or_create(
+            email=email,
+            defaults={"username": username, **validated_data}
+        )
+
+        if created and picture_url:
+            try:
+                image_content = urlopen(picture_url).read()
+                image_name = f"{uuid.uuid4()}.jpg"
+                image_file = ContentFile(image_content, image_name)
+
+                optimized, name = compress_image(image_file, size=(300, 300))
+                user.image_small.save(name, optimized, save=False)
+
+                optimized, name = compress_image(image_file, size=(800, 800))
+                user.image_medium.save(name, optimized, save=False)
+
+                optimized, name = compress_image(image_file, size=(1200, 1200))
+                user.image_large.save(name, optimized, save=False)
+
+                user.save()
+            except Exception:
+                pass
+
+        return user
