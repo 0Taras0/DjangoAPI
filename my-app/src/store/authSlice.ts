@@ -1,35 +1,62 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {ILoginResponse} from "../types/users/ILoginResponse.ts";
+import {jwtDecode} from "jwt-decode";
 
-interface AuthState {
-    access: string | null;
-    refresh: string | null;
+interface User {
+    id: number;
+    username: string;
+    email: string;
+    image: string;
 }
 
+interface AuthState {
+    user: User | null;
+}
+
+export const getUserFromToken = (token: string): User | null => {
+    try {
+        const decoded: any = jwtDecode(token);
+
+        return {
+            id: decoded.id,
+            username: decoded.username,
+            email: decoded.email,
+            image: decoded.image
+        };
+
+    } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+    }
+};
+
+const token = localStorage.getItem('access_token');
+const initialUser = token ? getUserFromToken(token) : null;
+
 const initialState: AuthState = {
-    access: localStorage.getItem("access_token") || null,
-    refresh: localStorage.getItem("refresh_token") || null,
+    user: initialUser,
 };
 
 const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        setTokens: (state, action: PayloadAction<ILoginResponse>) => {
-            state.access = action.payload.access;
-            state.refresh = action.payload.refresh;
+        loginSuccess: (state, action: PayloadAction<ILoginResponse>) => {
 
-            localStorage.setItem("access_token", action.payload.access);
-            localStorage.setItem("refresh_token", action.payload.refresh);
+            const user = getUserFromToken(action.payload.access);
+            if (user) {
+                state.user = user;
+                localStorage.setItem("access_token", action.payload.access);
+                localStorage.setItem("refresh_token", action.payload.refresh);
+            }
         },
-        clearTokens: (state) => {
-            state.access = null;
-            state.refresh = null;
+        logout: (state) => {
+            state.user = null;
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
         },
     },
 });
 
-export const { setTokens, clearTokens } = authSlice.actions;
+export const { loginSuccess, logout } = authSlice.actions;
 export default authSlice.reducer;

@@ -9,12 +9,13 @@ const SuccessPage = lazy(() => import("./pages/users/UserResetPasswordPage/Succe
 const UserLoginPage = lazy(() => import("./pages/users/UserLoginPage/UserLoginPage.tsx"));
 const UsersListPage = lazy(() => import("./pages/users/UsersListPage/UsersListPage.tsx"));
 const UserRegisterPage = lazy(() => import("./pages/users/UserRegisterPage/UserRegisterPage.tsx"));
+const UserLayout = lazy(() => import("./components/layouts/User/UserLayout.tsx"));
 
 function App() {
     return (
         <Suspense fallback={<LoadingScreen />}>
             <Routes>
-                <Route path="/" >
+                <Route path="/" element={<UserLayout />}>
                     <Route index element={<UsersListPage />}/>
                     <Route path={"register"} element={<UserRegisterPage />}/>
                     <Route path={"login"} element={<UserLoginPage />}/>

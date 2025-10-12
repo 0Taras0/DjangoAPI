@@ -4,7 +4,7 @@ import {useRegisterMutation} from "../../services/userService.ts";
 import type {IUserRegister} from "../../types/users/IUserRegister.ts";
 import ImageUploader from "../uploaders/ImageUploader.tsx";
 import {useDispatch} from "react-redux";
-import {setTokens} from "../../store/authSlice.ts";
+import {loginSuccess} from "../../store/authSlice.ts";
 import {useNavigate} from "react-router";
 import {useGoogleReCaptcha} from "react-google-recaptcha-v3";
 
@@ -36,7 +36,7 @@ const RegisterForm: React.FC = () => {
         try {
             const result = await register(userRegister).unwrap();
             console.log(result);
-            dispatch(setTokens(result));
+            dispatch(loginSuccess(result));
             navigate('/');
         } catch (err: any) {
             const errorMessage = err?.data?.errors?.Name?.[0];
