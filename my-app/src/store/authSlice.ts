@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type {ILoginResponse} from "../types/users/ILoginResponse.ts";
-import {jwtDecode} from "jwt-decode";
+import type { ILoginResponse } from "../types/users/ILoginResponse";
+import { jwtDecode } from "jwt-decode";
+import { setCookie, getCookie, deleteCookie } from "cookies-next";
 
 interface User {
     id: number;
@@ -13,24 +14,35 @@ interface AuthState {
     user: User | null;
 }
 
+interface DecodedToken {
+    token_type: "access" | "refresh";
+    exp: number;
+    iat: number;
+    jti: string;
+    user_id: string;
+    id: number;
+    username: string;
+    email: string;
+    image: string;
+    date_joined: string;
+}
+
 export const getUserFromToken = (token: string): User | null => {
     try {
-        const decoded: any = jwtDecode(token);
+        const decoded = jwtDecode<DecodedToken>(token);
 
         return {
             id: decoded.id,
             username: decoded.username,
             email: decoded.email,
-            image: decoded.image
+            image: decoded.image,
         };
-
-    } catch (e) {
-        console.error("Invalid token", e);
+    } catch {
         return null;
     }
 };
 
-const token = localStorage.getItem('access_token');
+const token = getCookie("access_token") as string | undefined;
 const initialUser = token ? getUserFromToken(token) : null;
 
 const initialState: AuthState = {
@@ -42,18 +54,18 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         loginSuccess: (state, action: PayloadAction<ILoginResponse>) => {
-
-            const user = getUserFromToken(action.payload.access);
+            const { access, refresh } = action.payload;
+            const user = getUserFromToken(access);
             if (user) {
                 state.user = user;
-                localStorage.setItem("access_token", action.payload.access);
-                localStorage.setItem("refresh_token", action.payload.refresh);
+                setCookie("access_token", access);
+                setCookie("refresh_token", refresh);
             }
         },
         logout: (state) => {
             state.user = null;
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
+            deleteCookie("access_token");
+            deleteCookie("refresh_token");
         },
     },
 });
