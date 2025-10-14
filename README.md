@@ -53,3 +53,15 @@ admin@gmail.com
 123456
 py manage.py runserver 4099
 ```
+
+## Working TOPIC - Reddit
+```
+py manage.py startapp topics
+py manage.py makemigrations topics
+python manage.py migrate
+
+python manage.py shell
+
+from topics.seed_topics import run
+run()
+```

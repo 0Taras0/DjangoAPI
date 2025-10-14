@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'atbapi',
     'drf_spectacular',
     'users.apps.UsersConfig',
+    'topics',
     "corsheaders",
 ]
 
@@ -141,8 +142,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 AVATARS_URL = '/avatars/'
+IMAGES_URL = '/images/'
 
 AVATARS_ROOT = BASE_DIR / 'avatars'
+IMAGES_ROOT = BASE_DIR / 'images'
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
