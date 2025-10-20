@@ -1,103 +1,124 @@
-import {Form, Input, Button, type FormProps} from "antd";
+import React from "react";
+import {useFormik} from "formik";
+import * as Yup from "yup";
 import {useLoginMutation, useLoginByGoogleMutation} from "../../services/userService.ts";
 import {useDispatch} from "react-redux";
-import {loginSuccess} from "../../store/authSlice.ts";
+import {setTokens} from "../../store/authSlice.ts";
 import {Link, useNavigate} from "react-router";
-import type {ILoginRequest} from "../../types/users/ILoginRequest.ts";
 import {useGoogleReCaptcha} from "react-google-recaptcha-v3";
 import {useGoogleLogin} from "@react-oauth/google";
-import { GoogleOutlined } from '@ant-design/icons';
+import InputField from "../inputs/InputField.tsx";
+import BaseButton from "../buttons/BaseButton.tsx";
+import type {ILoginRequest} from "../../types/users/ILoginRequest.ts";
 
 const LoginForm: React.FC = () => {
-    const [form] = Form.useForm();
-    const [login, { isLoading }] = useLoginMutation();
-    const [loginByGoogle, { isLoading: isGoogleLoading }] = useLoginByGoogleMutation();
+    const [login, {isLoading}] = useLoginMutation();
+    const [loginByGoogle, {isLoading: isGoogleLoading}] = useLoginByGoogleMutation();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { executeRecaptcha } = useGoogleReCaptcha();
+    const {executeRecaptcha} = useGoogleReCaptcha();
 
-    const onFinish: FormProps<ILoginRequest>["onFinish"] = async (values) => {
-        if (!executeRecaptcha) return;
+    const validationSchema = Yup.object({
+        username: Yup.string().required("Ім'я користувача є обов’язковим"),
+        password: Yup.string().required("Пароль є обов’язковим"),
+    });
 
-        const token = await executeRecaptcha('login');
-        const payload : ILoginRequest = { ...values, recaptcha_token: token };
+    const formik = useFormik<ILoginRequest>({
+        initialValues: {
+            username: "",
+            password: "",
+            recaptcha_token: "",
+        },
+        validationSchema,
+        onSubmit: async (values, {setSubmitting}) => {
+            if (!executeRecaptcha) return;
 
-        try {
-            const result = await login(payload).unwrap();
-            console.log(result);
-            dispatch(loginSuccess(result));
-            navigate('/');
-        } catch (err: any) {
-            const errorMessage = err?.data?.errors?.Name?.[0];
-            console.error(errorMessage);
-        }
-    };
+            try {
+                const token = await executeRecaptcha("login");
+                const payload: ILoginRequest = {...values, recaptcha_token: token};
+
+                const result = await login(payload).unwrap();
+                dispatch(setTokens(result));
+                navigate("/");
+            } catch (err: any) {
+                if (err?.data?.errors) {
+                    const formatted: Record<string, string> = {};
+                    for (const [key, val] of Object.entries(err.data.errors)) {
+                        formatted[key] = Array.isArray(val) ? val[0] : String(val);
+                    }
+                }
+            } finally {
+                setSubmitting(false);
+            }
+        },
+    });
 
     const loginUseGoogle = useGoogleLogin({
-        onSuccess: async (tokenResponse) =>
-        {
+        onSuccess: async (tokenResponse) => {
             try {
                 const result = await loginByGoogle(tokenResponse.access_token).unwrap();
-                dispatch(loginSuccess(result));
+                dispatch(setTokens(result));
                 navigate('/');
             } catch (err: any) {
-                const errorMessage = err?.data?.errors?.Name?.[0];
-                console.error(errorMessage);
+                console.error(err?.data?.errors?.Name?.[0]);
             }
         },
     });
 
     return (
-        <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            style={{ width: "100%" }}
-        >
-            <Form.Item
+        <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
+            <InputField
                 label="User name"
                 name="username"
-                rules={[
-                    { required: true, message: "Please enter your email" }
-                ]}
-            >
-                <Input placeholder="johnsmith" />
-            </Form.Item>
+                placeholder="Хустон"
+                value={formik.values.username}
+                onChange={formik.handleChange}
+                touched={formik.touched.username}
+                error={formik.errors.username}
+            />
 
-            <Form.Item
+            <InputField
                 label="Password"
                 name="password"
-                rules={[{ required: true, message: "Please enter your password" }]}
+                type="password"
+                placeholder="Введіть ваш пароль"
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                touched={formik.touched.password}
+                error={formik.errors.password}
+            />
+
+            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                Forgot password?
+            </Link>
+
+            <BaseButton
+                variant="primary"
+                size="lg"
+                isLoading={isLoading || formik.isSubmitting}
+                className="text-sm font-medium rounded-lg px-4 py-2 w-full mt-2 flex items-center justify-center gap-2"
+                onClick={(event) => {
+                    event.preventDefault();
+                    formik.handleSubmit();
+                }}
             >
-                <Input.Password placeholder="********" />
-            </Form.Item>
+                Log in
+            </BaseButton>
 
-            <Link to="/forgot-password">Forgot password?</Link>
-
-            <Form.Item>
-                <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={isLoading}
-                    block
-                    style={{ height: "40px", fontWeight: 600 }}
-                >
-                    Login
-                </Button>
-            </Form.Item>
-
-            <Button
+            <BaseButton
                 onClick={(event) => {
                     event.preventDefault();
                     loginUseGoogle();
                 }}
-                icon={<GoogleOutlined />}
-                loading={isGoogleLoading}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded w-full mt-4 flex items-center justify-center gap-2"
+                variant="ghost"
+                size="lg"
+                isLoading={isGoogleLoading}
+                iconLeft="https://www.svgrepo.com/show/355037/google.svg"
+                className="text-sm font-medium rounded-lg px-4 py-2 w-full mt-2 flex items-center justify-center gap-2"
             >
-                Login with Google
-            </Button>
-        </Form>
+                Log in with Google
+            </BaseButton>
+        </form>
     );
 };
 

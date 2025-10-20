@@ -3,13 +3,14 @@ import { Route, Routes } from "react-router";
 import { Suspense, lazy } from "react";
 import LoadingScreen from "./components/loadings/LoadingScreen.tsx";
 
+const NotFoundPage = lazy(() => import("./pages/additional/NotFoundPage.tsx"))
 const ForgotPasswordPage = lazy(() => import("./pages/users/UserResetPasswordPage/ForgotPasswordPage.tsx"));
 const ResetPasswordPage = lazy(() => import("./pages/users/UserResetPasswordPage/ResetPasswordPage.tsx"));
 const SuccessPage = lazy(() => import("./pages/users/UserResetPasswordPage/SuccessPage.tsx"));
 const UserLoginPage = lazy(() => import("./pages/users/UserLoginPage/UserLoginPage.tsx"));
 const UsersListPage = lazy(() => import("./pages/users/UsersListPage/UsersListPage.tsx"));
 const UserRegisterPage = lazy(() => import("./pages/users/UserRegisterPage/UserRegisterPage.tsx"));
-const UserLayout = lazy(() => import("./components/layouts/User/UserLayout.tsx"));
+const UserLayout = lazy(() => import("./layouts/User/UserLayout.tsx"));
 
 function App() {
     return (
@@ -22,6 +23,7 @@ function App() {
                     <Route path={"forgot-password"} element={<ForgotPasswordPage />} />
                     <Route path="reset-password/:uid/:token" element={<ResetPasswordPage />} />
                     <Route path={"success-confirm"} element={<SuccessPage />} />
+                    <Route path="*" element={<NotFoundPage/>} />
                 </Route>
             </Routes>
         </Suspense>

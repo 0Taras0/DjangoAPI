@@ -1,47 +1,28 @@
 import React from "react";
-import {Typography, Card, Row, Col} from "antd";
 import LoginForm from "../../../components/forms/LoginForm.tsx";
 
-const { Title, Text } = Typography;
 
 const UserLoginPage: React.FC = () => {
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "#f5f5f5",
-                padding: "20px",
-            }}
-        >
-            <Card
-                style={{
-                    maxWidth: 900,
-                    width: "100%",
-                    borderRadius: "16px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                }}
-            >
-                <Row>
-                    <Col xs={0} md={12} style={{ background: "#1677ff", padding: "60px 40px" }}>
-                        <Title level={2} style={{ color: "white" }}>
+        <div className="p-[20px] min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <div className="max-w-[900px] w-full rounded-[16px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+                <div className="grid grid-cols-2">
+                    <div className="bg-purple-500 px-[60px] py-[40px]">
+                        <span className="text-4xl text-white">
                             Welcome!
-                        </Title>
-                    </Col>
-                    <Col xs={24} md={12} style={{ padding: "40px" }}>
-                        <div style={{ textAlign: "center", marginBottom: 24 }}>
-                            <Title level={3} style={{ marginBottom: 0 }}>
-                                Login
-                            </Title>
-                            <Text>Enter your information to login</Text>
+                        </span>
+                    </div>
+
+                    <div className="p-[40px]">
+                        <div className="text-center mb-[24px]">
+                            <p className="text-3xl font-bold">Login</p>
+                            <p>Enter your information to login</p>
                         </div>
-                        <LoginForm />
-                    </Col>
-                </Row>
-            </Card>
+
+                        <LoginForm/>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
