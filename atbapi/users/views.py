@@ -68,16 +68,25 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         if serializer.is_valid():
             user = serializer.save()
 
-            refresh = RefreshToken.for_user(user)
+            refresh = CustomTokenObtainPairSerializer.get_token(user)
+            access = refresh.access_token
 
             return Response(
                 {
                     "refresh": str(refresh),
-                    "access": str(refresh.access_token),
+                    "access": str(access),
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "image": user.image_small.url if getattr(user, "image_small", None) else None,
+                        "date_joined": user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+                    },
                 },
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
     @action(detail=False, methods=['post'], url_path='password-reset-request',serializer_class=PasswordResetRequestSerializer)
     def password_reset_request(self, request):

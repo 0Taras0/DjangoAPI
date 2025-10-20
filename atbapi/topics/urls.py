@@ -1,9 +1,9 @@
 from rest_framework.routers import DefaultRouter
-from .views import TopicsViewSet
+from .views import TopicViewSet
 from django.urls import path, include
 
 router = DefaultRouter()
-router.register(r'topics', TopicsViewSet)
+router.register(r'topics', TopicViewSet, basename='topics')
 
 urlpatterns = [
     path('', include(router.urls)),
