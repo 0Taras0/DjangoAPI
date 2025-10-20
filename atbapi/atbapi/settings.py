@@ -163,6 +163,8 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
+FRONTEND_URL = "http://localhost:5173"
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.ukr.net'
 EMAIL_PORT = 2525 
