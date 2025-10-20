@@ -1,54 +1,66 @@
-import {Form, Input, Button, type FormProps} from "antd";
-import {useResetPasswordRequestMutation} from "../../services/userService.ts";
-import {useNavigate} from "react-router";
-import type {IResetPasswordRequest} from "../../types/users/IResetPasswordRequest.ts";
+import React from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useResetPasswordRequestMutation } from "../../services/userService.ts";
+import { useNavigate } from "react-router";
+import InputField from "../inputs/InputField.tsx";
+import BaseButton from "../buttons/BaseButton.tsx";
+import type { IResetPasswordRequest } from "../../types/users/IResetPasswordRequest.ts";
 
 const ResetPasswordRequestForm: React.FC = () => {
-    const [form] = Form.useForm();
     const [resetRequest, { isLoading }] = useResetPasswordRequestMutation();
     const navigate = useNavigate();
 
-    const onFinish: FormProps<IResetPasswordRequest>["onFinish"] = async (values) => {
-        try {
-            const result = await resetRequest(values).unwrap();
-            console.log(result)
-            navigate('/success-confirm');
-        } catch (err: any) {
-            const errorMessage = err?.data?.errors?.Name?.[0];
-            console.error(errorMessage);
-        }
-    };
+    const validationSchema = Yup.object({
+        email: Yup.string()
+            .email("Невірний формат email")
+            .required("Email є обов’язковим"),
+    });
+
+    const formik = useFormik<IResetPasswordRequest>({
+        initialValues: {
+            email: "",
+        },
+        validationSchema,
+        onSubmit: async (values, { setSubmitting }) => {
+            try {
+                const result = await resetRequest(values).unwrap();
+                console.log(result);
+                navigate("/success-confirm");
+            } catch (err: any) {
+                console.error(err?.data?.errors?.Name?.[0]);
+            } finally {
+                setSubmitting(false);
+            }
+        },
+    });
 
     return (
-        <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            style={{ width: "100%" }}
-        >
-            <Form.Item
+        <form onSubmit={formik.handleSubmit} className="flex flex-col gap-5 w-full">
+            <InputField
                 label="Email"
                 name="email"
-                rules={[
-                    { required: true, message: "Please enter your email" },
-                    { type: "email", message: "Invalid email format" },
-                ]}
-            >
-                <Input placeholder="johnsmith@example.com" />
-            </Form.Item>
+                type="email"
+                placeholder="johnsmith@example.com"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                touched={formik.touched.email}
+                error={formik.errors.email}
+            />
 
-            <Form.Item>
-                <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={isLoading}
-                    block
-                    style={{ height: "40px", fontWeight: 600 }}
-                >
-                    Reset
-                </Button>
-            </Form.Item>
-        </Form>
+            <BaseButton
+                variant="primary"
+                size="lg"
+                isLoading={isLoading || formik.isSubmitting}
+                className="w-full text-sm font-medium rounded-lg px-4 py-2 flex items-center justify-center gap-2"
+                onClick={(e) => {
+                    e.preventDefault();
+                    formik.handleSubmit();
+                }}
+            >
+                Reset
+            </BaseButton>
+        </form>
     );
 };
 

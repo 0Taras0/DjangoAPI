@@ -1,83 +1,89 @@
-import { Form, Input, Button, type FormProps, message } from "antd";
+import React from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { useResetPasswordMutation } from "../../services/userService.ts";
 import { useNavigate, useParams } from "react-router";
+import InputField from "../inputs/InputField.tsx";
+import BaseButton from "../buttons/BaseButton.tsx";
 import type { IResetPasswordConfirm } from "../../types/users/IResetPasswordConfirm.ts";
 
 const ResetPasswordForm: React.FC = () => {
-    const [form] = Form.useForm();
-    const [reset, { isLoading }] = useResetPasswordMutation();
+    const [resetPassword, { isLoading }] = useResetPasswordMutation();
     const navigate = useNavigate();
     const { uid, token } = useParams<{ uid: string; token: string }>();
 
-    const onFinish: FormProps<IResetPasswordConfirm>["onFinish"] = async (values) => {
-        if (values.new_password !== values.confirm_password) {
-            message.error("Паролі не співпадають");
-            return;
-        }
+    const validationSchema = Yup.object({
+        new_password: Yup.string()
+            .required("Введіть новий пароль")
+            .min(8, "Пароль має містити щонайменше 8 символів"),
+        confirm_password: Yup.string()
+            .required("Підтвердіть пароль")
+            .oneOf([Yup.ref("new_password")], "Паролі не співпадають"),
+    });
 
-        if (!uid || !token) {
-            message.error("Невірне або неповне посилання для скидання паролю");
-            return;
-        }
+    const formik = useFormik<IResetPasswordConfirm>({
+        initialValues: {
+            uid: uid || "",
+            token: token || "",
+            new_password: "",
+            confirm_password: "",
+        },
+        validationSchema,
+        onSubmit: async (values, { setSubmitting }) => {
+            if (!uid || !token) {
+                alert("Невірне або неповне посилання для скидання паролю");
+                return;
+            }
 
-        try {
-            const payload: IResetPasswordConfirm = {
-                uid,
-                token,
-                new_password: values.new_password,
-                confirm_password: values.confirm_password,
-            };
-
-            await reset(payload).unwrap();
-            message.success("Пароль успішно змінено");
-            navigate("/login");
-        } catch (err: any) {
-            console.error(err);
-            message.error(err?.data?.detail || "Помилка при зміні паролю");
-        }
-    };
+            try {
+                await resetPassword(values).unwrap();
+                navigate("/login");
+            } catch (err: any) {
+                console.error(err);
+                alert(err?.data?.detail || "Помилка при зміні паролю");
+            } finally {
+                setSubmitting(false);
+            }
+        },
+    });
 
     return (
-        <Form form={form} layout="vertical" onFinish={onFinish} style={{ width: "100%" }}>
-            <Form.Item
+        <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4 w-full">
+            <InputField
                 label="Новий пароль"
                 name="new_password"
-                rules={[{ required: true, message: "Введіть новий пароль" }]}
-            >
-                <Input.Password placeholder="********" />
-            </Form.Item>
+                type="password"
+                placeholder="********"
+                value={formik.values.new_password}
+                onChange={formik.handleChange}
+                touched={formik.touched.new_password}
+                error={formik.errors.new_password}
+            />
 
-            <Form.Item
+            <InputField
                 label="Підтвердження паролю"
                 name="confirm_password"
-                dependencies={["new_password"]}
-                rules={[
-                    { required: true, message: "Підтвердіть пароль" },
-                    ({ getFieldValue }) => ({
-                        validator(_, value) {
-                            if (!value || getFieldValue("new_password") === value) {
-                                return Promise.resolve();
-                            }
-                            return Promise.reject(new Error("Паролі не співпадають"));
-                        },
-                    }),
-                ]}
-            >
-                <Input.Password placeholder="********" />
-            </Form.Item>
+                type="password"
+                placeholder="********"
+                value={formik.values.confirm_password}
+                onChange={formik.handleChange}
+                touched={formik.touched.confirm_password}
+                error={formik.errors.confirm_password}
+            />
 
-            <Form.Item>
-                <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={isLoading}
-                    block
-                    style={{ height: "40px", fontWeight: 600 }}
-                >
-                    Змінити пароль
-                </Button>
-            </Form.Item>
-        </Form>
+            <BaseButton
+                variant="primary"
+                size="lg"
+                isLoading={isLoading || formik.isSubmitting}
+                className="text-sm font-medium rounded-lg px-4 py-2 w-full mt-2 flex items-center justify-center gap-2"
+                onClick={(e) => {
+                    e.preventDefault();
+                    formik.handleSubmit();
+                }}
+            >
+                Змінити пароль
+            </BaseButton>
+        </form>
     );
 };
 

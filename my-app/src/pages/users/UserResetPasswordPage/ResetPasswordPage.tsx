@@ -1,40 +1,23 @@
 import React from "react";
-import {Typography, Card, Row} from "antd";
 import ResetPasswordForm from "../../../components/forms/ResetPasswordForm.tsx";
-
-const { Title, Text } = Typography;
 
 const ResetPasswordPage: React.FC = () => {
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "#f5f5f5",
-                padding: "20px",
-            }}
-        >
-            <Card
-                style={{
-                    maxWidth: 900,
-                    width: "100%",
-                    borderRadius: "16px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                }}
-            >
-                <Row>
-                    <div style={{ textAlign: "center", marginBottom: 24 }}>
-                        <Title level={3} style={{ marginBottom: 0 }}>
-                            Reset Password
-                        </Title>
-                        <Text>Enter your new password</Text>
-                    </div>
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-5">
+            <div className="max-w-[900px] w-full rounded-2xl shadow-lg overflow-hidden bg-white dark:bg-gray-800 transition-colors duration-300">
+                <div className="text-center mb-6 p-6">
+                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
+                        Reset Password
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                        Enter your new password
+                    </p>
+                </div>
+
+                <div className="px-6 pb-6">
                     <ResetPasswordForm />
-                </Row>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 };

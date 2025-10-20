@@ -1,40 +1,34 @@
 import React from "react";
-import {Typography, Card, Row} from "antd";
 import ResetPasswordRequestForm from "../../../components/forms/ResetPasswordRequestForm.tsx";
-
-const { Title, Text } = Typography;
 
 const ForgotPasswordPage: React.FC = () => {
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "#f5f5f5",
-                padding: "20px",
-            }}
-        >
-            <Card
-                style={{
-                    maxWidth: 900,
-                    width: "100%",
-                    borderRadius: "16px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                }}
-            >
-                <Row>
-                    <div style={{ textAlign: "center", marginBottom: 24 }}>
-                        <Title level={3} style={{ marginBottom: 0 }}>
-                            Forgot Password?
-                        </Title>
-                        <Text>Enter your information to reset</Text>
+        <div className="p-[20px] min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+            <div className="max-w-[900px] w-full rounded-[16px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.1)] bg-white dark:bg-gray-800">
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                    <div className="bg-purple-500 px-[60px] py-[40px] hidden md:flex flex-col justify-center items-center">
+                        <span className="text-4xl font-semibold text-white">
+                            Need Help?
+                        </span>
+                        <p className="text-white/80 mt-2 text-center">
+                            We’ll send you a link to reset your password
+                        </p>
                     </div>
-                    <ResetPasswordRequestForm />
-                </Row>
-            </Card>
+
+                    <div className="p-[40px]">
+                        <div className="text-center mb-[24px]">
+                            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                Forgot Password?
+                            </p>
+                            <p className="text-gray-500 dark:text-gray-400">
+                                Enter your email to reset your password
+                            </p>
+                        </div>
+
+                        <ResetPasswordRequestForm />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
