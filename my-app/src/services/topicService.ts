@@ -27,9 +27,20 @@ export const topicService = createApi({
             }),
             providesTags: ['Topics'],
         }),
+
+        getTopicById: builder.query<IParentTopic, number>({
+            query: (id) => ({
+                url: `${id}/`,
+                method: 'GET'
+            }),
+            providesTags: ['Topics'],
+        }),
     }),
 });
 
 export const {
-    useGetTopicsQuery, useGetRootTopicsQuery
+    useGetTopicsQuery,
+    useGetRootTopicsQuery,
+    useGetTopicByIdQuery,
+    useLazyGetTopicByIdQuery,
 } = topicService;

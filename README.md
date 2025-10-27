@@ -65,3 +65,11 @@ python manage.py shell
 from topics.seed_topics import run
 run()
 ```
+
+## Working Posts
+```
+py manage.py startapp posts
+
+py manage.py makemigrations posts
+python manage.py migrate
+```

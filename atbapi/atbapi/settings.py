@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'users.apps.UsersConfig',
     'topics',
+    'posts',
     'django_filters',
     "corsheaders",
 ]
@@ -145,9 +146,11 @@ STATIC_URL = 'static/'
 
 AVATARS_URL = '/avatars/'
 IMAGES_URL = '/images/'
+VIDEOS_URL = '/videos/'
 
 AVATARS_ROOT = BASE_DIR / 'avatars'
 IMAGES_ROOT = BASE_DIR / 'images'
+VIDEOS_ROOT = BASE_DIR / 'videos'
 
 AUTH_USER_MODEL = 'users.CustomUser'
 

@@ -53,7 +53,9 @@ const ImageUploader: React.FC<Props> = ({
                         setTimeout(() => onSuccess?.("ok"), 0);
                     }}
                 >
-                    {fileList.length < 1 && "+ Upload"}
+                    {fileList.length < 1 && (
+                        <span className="text-gray-900 dark:text-gray-100">+ Upload</span>
+                    )}
                 </Upload>
             </ImgCrop>
 

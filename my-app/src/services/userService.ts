@@ -23,6 +23,13 @@ export const userService = createApi({
             },
             providesTags: ["Users"]
         }),
+        getUserById: builder.query<IUserItem, number>({
+            query: (id) => ({
+                url: `${id}/`,
+                method: 'GET'
+            }),
+            providesTags: ['Users'],
+        }),
         register: builder.mutation<ILoginResponse, IUserRegister>({
             query: (credentials) => {
                 const formData = serialize(credentials);
@@ -84,6 +91,8 @@ export const userService = createApi({
 
 export const {
     useGetUsersQuery,
+    useGetUserByIdQuery,
+    useLazyGetUserByIdQuery,
     useRegisterMutation,
     useLoginMutation,
     useResetPasswordRequestMutation,
