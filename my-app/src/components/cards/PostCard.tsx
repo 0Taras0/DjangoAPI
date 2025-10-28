@@ -3,8 +3,10 @@ import {useLazyGetTopicByIdQuery} from "../../services/topicService.ts";
 import {useEffect} from "react";
 import { faChevronUp, faChevronDown, faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import type {IPost} from "../../types/posts/IPost.ts";
+import MuxPlayer from "@mux/mux-player-react";
 
-const PostCard: React.FC<{ post: any }> = ({post}) => {
+const PostCard: React.FC<{ post: IPost }> = ({post}) => {
     const [loadUser, {data: user}] = useLazyGetUserByIdQuery();
     const [loadTopic, {data: topic}] = useLazyGetTopicByIdQuery();
 
@@ -41,10 +43,13 @@ const PostCard: React.FC<{ post: any }> = ({post}) => {
                 )}
 
                 {post.video && (
-                    <video
+                    // <video
+                    //     src={post.video}
+                    //     controls
+                    //     className="rounded-lg w-full max-h-[500px] mb-3"
+                    // />
+                    <MuxPlayer
                         src={post.video}
-                        controls
-                        className="rounded-lg w-full max-h-[500px] mb-3"
                     />
                 )}
 
